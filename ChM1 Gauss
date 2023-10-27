@@ -7,12 +7,13 @@ using namespace std;
 double* gauss(double **matrix, double *y, const int n, int accur);
 void outputMatrix(double** matrix, double* y, const int n);
 void initialisationConst(double** matrix, double* y);
+void residVector(double** matrix, double* resVect, double* bVect, double* xVect);
 
 int main() {
     setlocale(LC_ALL, "Russian");
     const int n=3;
     int accur = 100000;
-    double  * bVect, *xVect, * xVect2, *vNev;
+    double  * bVect, *xVect, * xVect2, * residVect;
     double ** matrix = new double* [n];
     for (int i = 0; i < n; i++) {
         matrix[i] = new double[n];
@@ -20,19 +21,11 @@ int main() {
     bVect = new double[n];
     xVect = new double[n];
     xVect2 = new double[n];
-    vNev = new double[n];
-   /* for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            cout << "введите элемент матрицы |" << j << "| |" << i << "|:" << endl;
-            cin >> matrix[j][i];
-            cout << endl;
-        }
-    }*/
+    residVect = new double[n];
+    for (int i = 0; i < n; i++) {
+        residVect[i] = 0;
+    }
     initialisationConst(matrix, bVect);
-    /*for (int i = 0; i < n; i++) {
-        cout << "введите элемент B |" << i << "|:";
-        cin >> bVect[i];
-    }*/
     outputMatrix(matrix, bVect, n);
     xVect=gauss(matrix, bVect, n, accur);
     cout << "answer:";
@@ -41,16 +34,7 @@ int main() {
     }
     // residual vector (вектор невязки)
     initialisationConst(matrix, bVect);
-    double residVect[n] = { 0, 0, 0 };
-    for (int i = 0; i <= 2; i++) {
-        for (int j = 0; j <= 2; j++) {
-            residVect[i] += matrix[i][j] * xVect[j];
-        }
-    }
-    cout << "vector nevyazki" << endl;
-    for (int i = 0; i <= 2; i++) {
-        cout << residVect[i] - bVect[i] << endl;
-    }
+    residVector(matrix, residVect, bVect, xVect);
     //---------------------------------------------------------
     xVect2 = gauss(matrix, residVect, n, accur);
     cout << "answer2:";
@@ -71,11 +55,13 @@ int main() {
     cout << "Pogreshnost= ";
     cout << pogreshnost << endl;
     // удаление массивов
-    for (int i = 0; i < n; i++)
-    delete[]matrix[i];
+    for (int i = 0; i < n; i++) {
+        delete[]matrix[i];
+    }
     delete[]bVect;
     delete[]xVect;
-    delete[]vNev;
+    delete[]xVect2;
+    delete[]residVect;
 }
 void outputMatrix(double** matrix, double* y, const int n) {
     cout << endl << "matrix: " << endl;
@@ -145,6 +131,7 @@ double* gauss(double **matrix, double *y, const int n, int accur)
             }
             if (k==n-1)
             outputMatrix(matrix, y, n);
+
             k++;
         }
         // обратная подстановка
@@ -161,4 +148,15 @@ void initialisationConst(double** matrix, double* y) {
     matrix[1][0] = 3.28; matrix[1][1] = 0.71; matrix[1][2] = 1.15;
     matrix[2][0] = 1.15; matrix[2][1] = 2.70; matrix[2][2] = 3.58;
     y[0] = 15.71; y[1] = 43.78; y[2] = 37.11;
+}
+void residVector(double** matrix, double* resVect, double* bVect, double* xVect) {
+    for (int i = 0; i <= 2; i++) {
+        for (int j = 0; j <= 2; j++) {
+            resVect[i] += matrix[i][j] * xVect[j];
+        }
+    }
+    cout << "vector nevyazki" << endl;
+    for (int i = 0; i <= 2; i++) {
+        cout << resVect[i] - bVect[i] << endl;
+    }
 }
